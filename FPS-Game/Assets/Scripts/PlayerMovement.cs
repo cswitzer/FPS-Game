@@ -38,7 +38,7 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             // lower than zero so we can force our player down on the ground
-            velocity.y = -2f;
+            velocity.y = -0.1f;
         }
     }
 
