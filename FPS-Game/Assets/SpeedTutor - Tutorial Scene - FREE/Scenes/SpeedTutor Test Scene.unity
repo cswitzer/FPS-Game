@@ -738,8 +738,8 @@ CharacterController:
   serializedVersion: 2
   m_Height: 3.5
   m_Radius: 0.6
-  m_SlopeLimit: 45
-  m_StepOffset: 0.2
+  m_SlopeLimit: 90
+  m_StepOffset: 0.5
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
@@ -1261,7 +1261,7 @@ GameObject:
   - component: {fileID: 444566044}
   - component: {fileID: 444566043}
   - component: {fileID: 444566042}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Large_Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
