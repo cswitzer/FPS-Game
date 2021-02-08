@@ -28,19 +28,17 @@ public class Gun : MonoBehaviour
 
     private void Shoot()
     {
-        RegisterHit();
+        RegisterHitResult();
     }
 
-    private void RegisterHit()
+    private void RegisterHitResult()
     {
         // place shooting code using raycasting (using the camera)
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // does the actual raycasting and returns true if we hit something
-        if (Physics.Raycast(ray, out hit, 100));
+        if (Physics.Raycast(ray, out hit, 100))
         {
-            Debug.Log(hit.transform.name);
-
             Target target = hit.transform.GetComponent<Target>();
             if (target != null)
             {
@@ -58,11 +56,6 @@ public class Gun : MonoBehaviour
             GameObject impactGO = Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
             Destroy(impactGO, 2.5f);
         }
-    }
-
-    public float GetDamage()
-    {
-        return damage;
     }
 
 }
