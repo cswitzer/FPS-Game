@@ -5,11 +5,17 @@ using UnityEngine;
 
 public class Pistol : MonoBehaviour
 {
+    AudioSource audioSource;
     [SerializeField] float damage = 25f;
     [SerializeField] float impactForce = 700f;
 
     [SerializeField] ParticleSystem muzzleFlash;
     [SerializeField] GameObject impactEffect;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -18,6 +24,7 @@ public class Pistol : MonoBehaviour
         if (Input.GetButtonDown("Fire1"))
         {
             muzzleFlash.Play();
+            audioSource.Play();
             Shoot();
         }
     }

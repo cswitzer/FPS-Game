@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
+    AudioSource audioSource;
+
     [SerializeField] float range = 10f;
     [SerializeField] float damage = 10f;
     [SerializeField] float impactForce = 500f;
@@ -15,6 +17,11 @@ public class Gun : MonoBehaviour
 
     private float nextTimeToFire = 0f;
 
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -22,6 +29,7 @@ public class Gun : MonoBehaviour
         {
             nextTimeToFire = Time.time + 1f/fireRate;
             muzzleFlash.Play();
+            audioSource.Play();
             Shoot();
         }
     }
