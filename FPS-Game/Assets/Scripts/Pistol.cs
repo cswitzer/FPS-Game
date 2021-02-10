@@ -9,17 +9,40 @@ public class Pistol : MonoBehaviour
     [SerializeField] float damage = 25f;
     [SerializeField] float impactForce = 700f;
 
+    [SerializeField] int maxAmmo = 12;
+    [SerializeField] float reloadTime = 1f;
+    private int currentAmmo;
+    private bool isReloading = false;
+
+    public Animator animator;
+
     [SerializeField] ParticleSystem muzzleFlash;
     [SerializeField] GameObject impactEffect;
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        currentAmmo = maxAmmo;
+    }
+
+    void OnEnable()
+    {
+        isReloading = false;
+        animator.SetBool("Reloading", false);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isReloading)
+        {
+            // if I am reloading, I don't want be able to shoot or restart my coroutine
+            return;
+        }
+
+        // Do we need to reload yet?
+        CheckForReload();
+
         // GetButtonDown for one click fire
         if (Input.GetButtonDown("Fire1"))
         {
@@ -29,8 +52,38 @@ public class Pistol : MonoBehaviour
         }
     }
 
+    void CheckForReload()
+    {
+        if (currentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+            // return because we don't want to shoot again
+            return;
+        }
+    }
+
+    IEnumerator Reload()
+    {
+        isReloading = true;
+        Debug.Log("Reloading...");
+
+        // play reload animation
+        animator.SetBool("Reloading", true);
+
+        // pause for reloadTime seconds. -.25f so I can't shoot during reload animation
+        yield return new WaitForSeconds(reloadTime - .25f);
+
+        // play idle animation
+        animator.SetBool("Reloading", false);
+        yield return new WaitForSeconds(.25f);
+        Debug.Log("Time to blast some enemies!");
+        currentAmmo = maxAmmo;
+        isReloading = false;
+    }
+
     void Shoot()
     {
+        currentAmmo--;
         // the ray will map to the mouse's position
         RaycastHit hit; // this returns a Vector3!
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

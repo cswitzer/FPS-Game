@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,13 @@ public class Gun : MonoBehaviour
     [SerializeField] float impactForce = 500f;
     [SerializeField] float fireRate = 2f;
 
+    [SerializeField] int maxAmmo = 30;
+    [SerializeField] float reloadTime = 1f;
+    private int currentAmmo;
+    private bool isReloading = false;
+
+    public Animator animator;
+
     [SerializeField] ParticleSystem muzzleFlash;
     // we want to instantiate hit FX, so that is why this is gameobject
     [SerializeField] GameObject impactEffect;
@@ -20,22 +28,68 @@ public class Gun : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        currentAmmo = maxAmmo;
+    }
+
+    void OnEnable()
+    {
+        isReloading = false;
+        animator.SetBool("Reloading", false);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isReloading)
+        {
+            // if I am reloading, I don't want be able to shoot or restart my coroutine
+            return;
+        }
+
+        // Do we need to reload yet?
+        CheckForReload();
+
         if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
         {
             nextTimeToFire = Time.time + 1f/fireRate;
-            muzzleFlash.Play();
-            audioSource.Play();
             Shoot();
         }
     }
 
+    void CheckForReload()
+    {
+        if (currentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+            // return because we don't want to shoot again
+            return;
+        }
+    }
+
+    IEnumerator Reload()
+    {
+        isReloading = true;
+        Debug.Log("Reloading...");
+
+        // play reload animation
+        animator.SetBool("Reloading", true);
+
+        // pause for reloadTime seconds. -.25f so I can't shoot during reload animation
+        yield return new WaitForSeconds(reloadTime - .25f);
+
+        // play idle animation
+        animator.SetBool("Reloading", false);
+        yield return new WaitForSeconds(.25f);
+        Debug.Log("Time to blast some enemies!");
+        currentAmmo = maxAmmo;
+        isReloading = false;
+    }
+
     private void Shoot()
     {
+        currentAmmo--;
+        muzzleFlash.Play();
+        audioSource.Play();
         RegisterHitResult();
     }
 
