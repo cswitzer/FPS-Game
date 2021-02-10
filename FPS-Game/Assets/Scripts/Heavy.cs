@@ -5,6 +5,7 @@ using UnityEngine;
 public class Heavy : MonoBehaviour
 {
     AudioSource audioSource;
+    [SerializeField] AudioClip reloadingSoundEffect;
 
     [SerializeField] float range = 10f;
     [SerializeField] float damage = 10f;
@@ -70,7 +71,9 @@ public class Heavy : MonoBehaviour
     IEnumerator Reload()
     {
         isReloading = true;
-        Debug.Log("Reloading...");
+
+        // queue the reload sound
+        audioSource.PlayOneShot(reloadingSoundEffect, 1f);
 
         // play reload animation
         animator.SetBool("Reloading", true);

@@ -1465,6 +1465,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a6ee97d38a84d40b2d5993cb9095ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  reloadingSoundEffect: {fileID: 8300000, guid: 126e0b1db5cd6f54da28da446eeb67c0,
+    type: 3}
   range: 200
   damage: 15
   impactForce: 750
@@ -2527,6 +2529,10 @@ PrefabInstance:
       propertyPath: impactEffect
       value: 
       objectReference: {fileID: 100002, guid: 99c73c92ac40473459640b165473206f, type: 3}
+    - target: {fileID: 1812186746, guid: 3c81b162a1af44348b8994f7040514d4, type: 3}
+      propertyPath: reloadingSoundEffect
+      value: 
+      objectReference: {fileID: 8300000, guid: 3cea3878aa390a548a7fc6f6bfc90ecc, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3c81b162a1af44348b8994f7040514d4, type: 3}
 --- !u!4 &820730961 stripped
@@ -2661,6 +2667,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f5e6a1a96f566e43be90bda3ef15029, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  reloadingSoundEffect: {fileID: 8300000, guid: f6727888a13262d44acfcc216821d28b,
+    type: 3}
   damage: 25
   impactForce: 800
   maxAmmo: 12

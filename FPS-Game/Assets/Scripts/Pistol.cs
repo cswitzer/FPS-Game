@@ -6,6 +6,8 @@ using UnityEngine;
 public class Pistol : MonoBehaviour
 {
     AudioSource audioSource;
+    [SerializeField] AudioClip reloadingSoundEffect;
+
     [SerializeField] float damage = 25f;
     [SerializeField] float impactForce = 700f;
 
@@ -65,7 +67,7 @@ public class Pistol : MonoBehaviour
     IEnumerator Reload()
     {
         isReloading = true;
-        Debug.Log("Reloading...");
+        audioSource.PlayOneShot(reloadingSoundEffect, 1f);
 
         // play reload animation
         animator.SetBool("Reloading", true);
