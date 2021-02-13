@@ -4,75 +4,58 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] CharacterController controller;
-    [SerializeField] float speed = 20f;
-    [SerializeField] float gravity = -9.81f;
-    [SerializeField] float jumpHeight = 3f;
+    private Rigidbody rb;
+
+    [SerializeField] float moveSpeed = 6;
+    [SerializeField] float jumpForce = 10f;
 
     [SerializeField] Transform groundCheck;
-    [SerializeField] float groundDistance = 0.4f;
     [SerializeField] LayerMask groundMask;
     [SerializeField] LayerMask wallMask;
     [SerializeField] Transform orientation;
+    [SerializeField] float groundDistance = 0.4f;
     bool isWallRight, isWallLeft;
+    bool isWallRunning = false;
 
     Vector3 velocity;
-    bool isGrounded;
+    bool isGrounded = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        controller = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     void Update()
     {
         CheckIfGrounded();
-        ControlPlayerMovement();
-        CheckForWall();
-        HandleJumping();
-        HandleGravity();
+
+        // Input
+        float x = Input.GetAxisRaw("Horizontal") * moveSpeed;
+        float z = Input.GetAxisRaw("Vertical") * moveSpeed;
+
+        // Jumping
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+        }
+
+        // moving
+        Vector3 movePos = transform.right * x + transform.forward * z;
+        Vector3 newMovePos = new Vector3(movePos.x, rb.velocity.y, movePos.z);
+        rb.velocity = newMovePos;
+
     }
 
+    
     private void CheckIfGrounded()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance /*radius*/, groundMask);
-
+        isGrounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z), /*radius*/ 1.67f, groundMask);
+        Debug.Log(isGrounded);
         if (isGrounded && velocity.y < 0)
         {
-            // lower than zero so we can force our player down on the ground
-            velocity.y = -0.1f;
+            isWallRunning = false;
         }
-    }
-
-    private void ControlPlayerMovement()
-    {
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-
-        Vector3 move = transform.right * x + transform.forward * z;
-
-        controller.Move(move * speed * Time.deltaTime);
-    }
-
-    private void HandleJumping()
-    {
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
-        }
-    }
-
-    private void HandleGravity()
-    {
-        // formula for falling in 3d is (1/2)g * t^2, so Time.deltaTime needs to multiply twice
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
-    }
-
-    private void CheckForWall()
-    {
-        // isWallRight = Physics.Raycast(transform.position)
     }
 }
