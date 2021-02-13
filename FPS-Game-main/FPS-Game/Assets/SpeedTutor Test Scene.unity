@@ -813,6 +813,9 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 256
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!95 &259908453
 Animator:
   serializedVersion: 3

@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Transform groundCheck;
     [SerializeField] float groundDistance = 0.4f;
     [SerializeField] LayerMask groundMask;
+    [SerializeField] LayerMask wallMask;
+    [SerializeField] Transform orientation;
+    bool isWallRight, isWallLeft;
 
     Vector3 velocity;
     bool isGrounded;
@@ -27,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     {
         CheckIfGrounded();
         ControlPlayerMovement();
+        CheckForWall();
         HandleJumping();
         HandleGravity();
     }
@@ -65,5 +69,10 @@ public class PlayerMovement : MonoBehaviour
         // formula for falling in 3d is (1/2)g * t^2, so Time.deltaTime needs to multiply twice
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void CheckForWall()
+    {
+        // isWallRight = Physics.Raycast(transform.position)
     }
 }
