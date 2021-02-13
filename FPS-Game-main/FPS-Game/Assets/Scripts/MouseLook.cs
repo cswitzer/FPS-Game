@@ -25,8 +25,8 @@ public class MouseLook : MonoBehaviour
 
     private void HandleMouseRotation()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.fixedDeltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.fixedDeltaTime;
 
         // do not rotate behind the player
         xRotation -= mouseY;
@@ -35,5 +35,7 @@ public class MouseLook : MonoBehaviour
 
         // mouse x rotates horizontally around y axis
         playerBody.Rotate(Vector3.up * mouseX);
+
+        
     }
 }
