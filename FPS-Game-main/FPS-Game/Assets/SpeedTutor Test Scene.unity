@@ -249,7 +249,7 @@ MonoBehaviour:
   whatIsWall:
     serializedVersion: 2
     m_Bits: 512
-  wallRunningSpeed: 12
+  wallRunningSpeed: 8
   wallStickForce: 1
 --- !u!95 &259908453
 Animator:

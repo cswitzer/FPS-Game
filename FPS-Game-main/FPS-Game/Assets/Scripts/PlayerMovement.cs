@@ -27,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
     public Transform orientation;
     public LayerMask whatIsWall;
     public float wallRunningSpeed;
-    public float wallStickForce;
+    public float wallRunExitSlowDownRate;
     Vector3 orientationNormal;
     Vector3 orientationPoint;
     bool isWallRunning = false;
@@ -104,8 +104,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (!isWallRight || !isWallLeft)
         {
-            isWallRunning = false;
-            StopWallRun();
+            // I don't want my x direction to be 0 forever, so only run the StopWallRun() once each wall run exit
+            if (isWallRunning == false)
+                return;
+            if (isWallRunning)
+                StopWallRun();
         }
     }
 
@@ -115,30 +118,42 @@ public class PlayerMovement : MonoBehaviour
 
         if (isWallRight && Input.GetKey(KeyCode.D))
         {
-            Physics.Raycast(orientation.position, orientation.right, out hit, whatIsWall);
+            Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
             // return the normal and point of the wall we hit with our ray
             orientationNormal = hit.normal;
             orientationPoint = hit.point;
 
             // Get the direction the player should run in using the cross product
-            Vector3 alongWall = Vector3.Cross(hit.normal, Vector3.up);
-            Debug.Log("Across Wall Value: " + alongWall);
+            // negative must be attached to Vector3 otherwise alongWall will go in opposite direction
+            Vector3 alongWall = -Vector3.Cross(hit.normal, Vector3.up);
+            
+            // Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
+
+            velocity = alongWall * wallRunningSpeed;
+            controller.Move(velocity * Time.deltaTime);
         }
         else if (isWallLeft && Input.GetKey(KeyCode.A))
         {
-            Physics.Raycast(orientation.position, -orientation.right, out hit, whatIsWall);
+            Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
             // return the normal and point of the wall we hit with our ray
             orientationNormal = hit.normal;
             orientationPoint = hit.point;
   
             // Get the direction the player should run in using the cross product
             Vector3 alongWall = Vector3.Cross(hit.normal, Vector3.up);
-            Debug.Log("Across Wall Value: " + alongWall);
+            
+            // Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
+
+            velocity = alongWall * wallRunningSpeed;
+            controller.Move(velocity * Time.deltaTime);
         }
+        
     }
 
     private void StopWallRun()
     {
-        
+        velocity.x = 0;
+        controller.Move(velocity * Time.deltaTime);
+        isWallRunning = false; // will not allow this function to run again until after wallrunning is set to true
     }
 }
