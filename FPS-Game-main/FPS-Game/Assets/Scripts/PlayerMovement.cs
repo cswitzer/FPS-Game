@@ -27,11 +27,17 @@ public class PlayerMovement : MonoBehaviour
     public Transform orientation;
     public LayerMask whatIsWall;
     public float wallRunningSpeed;
+    public float wallJumpHorizontalForce = 5f;
+    public float wallJumpVerticalForce = 5f;
     public float wallRunExitSlowDownRate;
+    public float wallRunCameraRotationSpeed;
+    public float wallRunCameraRotation;
+    public float maxWallCameraRotation;
     Vector3 orientationNormal;
     Vector3 orientationPoint;
     bool isWallRunning = false;
     bool isWallRight, isWallLeft = false;
+    bool cameraIsRotating = false;
 
     Vector3 velocity;
     bool isGrounded;
@@ -72,6 +78,9 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -1f;
+            // Keep the player from sliding on the horizontal axes
+            velocity.x = 0;
+            velocity.z = 0;
         }
     }
 
@@ -87,7 +96,7 @@ public class PlayerMovement : MonoBehaviour
         else if (isWallRunning == true && Input.GetButtonDown("Jump"))
         {
             // add logic here for jumping off the wall in the correct direction
-            Debug.Log("I am jumping off a wall");
+            HandleWallJump();
         }
     }
     
@@ -100,11 +109,15 @@ public class PlayerMovement : MonoBehaviour
         {
             // check out what isWallRunning = true enables in the MovePlayer() and Jumping() functions
             isWallRunning = true;
+            cameraIsRotating = true;
+            // camera tilting is handled in here as well
             PerformWallRun();
         }
         else if (!isWallRight || !isWallLeft)
         {
-            // I don't want my x direction to be 0 forever, so only run the StopWallRun() once each wall run exit
+            
+            TiltCameraToOriginalPos();
+            // I don't want my x direction to go on for forever, so only run the StopWallRun() once each wall run exit
             if (isWallRunning == false)
                 return;
             if (isWallRunning)
@@ -116,38 +129,40 @@ public class PlayerMovement : MonoBehaviour
     {
         RaycastHit hit = new RaycastHit();
 
-        if (isWallRight && Input.GetKey(KeyCode.D))
+        if (isWallRight)
         {
             Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
+
             // return the normal and point of the wall we hit with our ray
-            orientationNormal = hit.normal;
+            orientationNormal = hit.normal.normalized;
             orientationPoint = hit.point;
 
-            // Get the direction the player should run in using the cross product
             // negative must be attached to Vector3 otherwise alongWall will go in opposite direction
             Vector3 alongWall = -Vector3.Cross(hit.normal, Vector3.up);
-            
-            // Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
 
             velocity = alongWall * wallRunningSpeed;
             controller.Move(velocity * Time.deltaTime);
+
+            HandleWallRunRotation();
+            //Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
         }
-        else if (isWallLeft && Input.GetKey(KeyCode.A))
+        else if (isWallLeft)
         {
             Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
             // return the normal and point of the wall we hit with our ray
-            orientationNormal = hit.normal;
+            orientationNormal = hit.normal.normalized;
             orientationPoint = hit.point;
   
             // Get the direction the player should run in using the cross product
             Vector3 alongWall = Vector3.Cross(hit.normal, Vector3.up);
-            
-            // Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
 
             velocity = alongWall * wallRunningSpeed;
             controller.Move(velocity * Time.deltaTime);
+
+            HandleWallRunRotation();
+            //Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
         }
-        
+
     }
 
     private void StopWallRun()
@@ -155,5 +170,73 @@ public class PlayerMovement : MonoBehaviour
         velocity.x = 0;
         controller.Move(velocity * Time.deltaTime);
         isWallRunning = false; // will not allow this function to run again until after wallrunning is set to true
+    }
+
+    private void HandleWallRunRotation()
+    {
+        // rotate the camera every iterative call to this function...
+        playerCam.transform.localRotation = Quaternion.Euler(0, 0, wallRunCameraRotation);
+        ///...if the player is wallrunning on a wall to their RIGHT and they are not rotated completely 30 degrees
+        if (Math.Abs(wallRunCameraRotation) < maxWallCameraRotation && isWallRunning && isWallRight)
+        {
+            wallRunCameraRotation += Time.deltaTime * maxWallCameraRotation * wallRunCameraRotationSpeed;
+        }
+        ///...if the player is wallrunning on a wall to their LEFT and they are not rotated completely 30 degrees
+        else if (Math.Abs(wallRunCameraRotation) < maxWallCameraRotation && isWallRunning && isWallLeft)
+        {
+            wallRunCameraRotation -= Time.deltaTime * maxWallCameraRotation * wallRunCameraRotationSpeed;
+        }
+    }
+
+    private void TiltCameraToOriginalPos()
+    {
+        // fixes the jittery camera issue since wall run run camera rotation never equals zero
+        if (wallRunCameraRotation < 0.5 && wallRunCameraRotation > -0.5)
+        {
+            wallRunCameraRotation = 0;
+        }
+        // rotate the camera to original position on every iteration...
+        playerCam.transform.localRotation = Quaternion.Euler(0, 0, wallRunCameraRotation);
+        //... if the player is not attached to a wall, which means wallrunning is false
+        if (wallRunCameraRotation > 0 && !isWallLeft && !isWallRight)
+        {
+            // the camera
+            wallRunCameraRotation -= Time.deltaTime * maxWallCameraRotation * wallRunCameraRotationSpeed;
+        }
+        else if (wallRunCameraRotation < 0 && !isWallLeft && !isWallRight)
+        {
+            wallRunCameraRotation += Time.deltaTime * maxWallCameraRotation * wallRunCameraRotationSpeed;
+        }
+    }
+
+    private void HandleWallJump()
+    {
+        // check for jump is already checked for in the calling function "Jumping()"
+        RaycastHit hit = new RaycastHit();
+
+        if (isWallRight)
+        {
+            isWallRunning = false;
+            Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
+
+            // for jumping away from the wall
+            orientationNormal = hit.normal.normalized;
+
+            // horizontal jumping force
+            velocity = orientationNormal * wallJumpHorizontalForce;
+
+            // vertical jumping force
+            velocity.y = Mathf.Sqrt(wallJumpVerticalForce * -2f * gravity * Time.deltaTime);
+            controller.Move(velocity);
+            
+        }
+        if (isWallLeft && Input.GetKey(KeyCode.A))
+        {
+            Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
+            orientationNormal = hit.normal.normalized;
+
+            isWallRunning = false;
+        }
+        
     }
 }

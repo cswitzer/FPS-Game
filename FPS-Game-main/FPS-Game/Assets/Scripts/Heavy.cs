@@ -7,7 +7,6 @@ public class Heavy : MonoBehaviour
     AudioSource audioSource;
     [SerializeField] AudioClip reloadingSoundEffect;
 
-    [SerializeField] float range = 10f;
     [SerializeField] float damage = 10f;
     [SerializeField] float impactForce = 500f;
     [SerializeField] float fireRate = 2f;
