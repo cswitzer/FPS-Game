@@ -210,7 +210,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 259908449}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: -3.3, y: 4.65, z: -6.61}
+  m_LocalPosition: {x: -3.3, y: 2.78, z: -6.61}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1186577800}
@@ -233,15 +233,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 259908455}
-  movementSpeed: 20
-  airMovementSpeed: 10
+  movementSpeed: 12
+  airMovementSpeed: 5
   maxSpeed: 12
   whatIsGround:
     serializedVersion: 2
     m_Bits: 256
   groundCheck: {fileID: 235162734}
   groundDistance: 0.5
-  jumpForce: 3
+  jumpForce: 4
   jumpCoolDown: 1
   gravity: -20
   playerCam: {fileID: 1910243299}
@@ -249,13 +249,14 @@ MonoBehaviour:
   whatIsWall:
     serializedVersion: 2
     m_Bits: 512
-  wallRunningSpeed: 5
-  wallJumpHorizontalForce: 30
-  wallJumpVerticalForce: 20
+  wallRunningSpeed: 8
+  wallJumpHorizontalForce: 6
+  wallJumpVerticalForce: 4
   wallRunExitSlowDownRate: 0
   wallRunCameraRotationSpeed: 3
   wallRunCameraRotation: 0
   maxWallCameraRotation: 30
+  timeElapsed: 0
 --- !u!95 &259908453
 Animator:
   serializedVersion: 3
@@ -1584,7 +1585,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 5b557a70923944bbe88e0c3f7bf6a78a, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -1708,7 +1709,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1186577799}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.03, y: 0, z: -0}
+  m_LocalPosition: {x: 0.03, y: -0.14, z: -0}
   m_LocalScale: {x: 1, y: 1.5, z: 1}
   m_Children: []
   m_Father: {fileID: 259908451}

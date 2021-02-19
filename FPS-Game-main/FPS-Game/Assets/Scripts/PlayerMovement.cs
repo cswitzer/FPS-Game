@@ -33,25 +33,33 @@ public class PlayerMovement : MonoBehaviour
     public float wallRunCameraRotationSpeed;
     public float wallRunCameraRotation;
     public float maxWallCameraRotation;
+    public float timeElapsed = 0;
     Vector3 orientationNormal;
     Vector3 orientationPoint;
     bool isWallRunning = false;
     bool isWallRight, isWallLeft = false;
+    bool isWallJumping = false;
     bool cameraIsRotating = false;
 
     Vector3 velocity;
+    bool isInAir = false;
     bool isGrounded;
 
     void Update()
     {
-        MovePlayer();
         GroundCheck();
+        if (isGrounded)
+            MovePlayer();
+        else if (isInAir)
+            MovePlayerInAir();
         Jumping();
         CheckForWall();
+        HandleWallJump();
     }
 
     private void MovePlayer()
     {
+        // I don't want any control of player when I am in the air
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
@@ -71,16 +79,45 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void MovePlayerInAir()
+    {
+        // I don't want any control of player when I am in the air
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        // air movement speed is slower because this isn't Doom Eternal
+        Vector3 move = transform.right * x + transform.forward * z;
+        controller.Move(move * airMovementSpeed * Time.deltaTime);
+
+        // If not wallrunning, apply normal gravity. If wall running, change gravity to be weightless
+        if (isWallRunning == false)
+        {
+            velocity.y += gravity * Time.deltaTime;
+            controller.Move(velocity * Time.deltaTime);
+        }
+        else
+        {
+            velocity.y += (gravity + 15f) * Time.deltaTime;
+            controller.Move(velocity * Time.deltaTime);
+        }
+    }
+
     private void GroundCheck()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, whatIsGround);
-        
+
         if (isGrounded && velocity.y < 0)
         {
+            isInAir = false;
+            // Debug.Log("Is in the air: " + isInAir);
             velocity.y = -1f;
             // Keep the player from sliding on the horizontal axes
             velocity.x = 0;
             velocity.z = 0;
+        }
+        else
+        {
+            isInAir = true;
         }
     }
 
@@ -93,13 +130,8 @@ public class PlayerMovement : MonoBehaviour
                 velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
             }
         }
-        else if (isWallRunning == true && Input.GetButtonDown("Jump"))
-        {
-            // add logic here for jumping off the wall in the correct direction
-            HandleWallJump();
-        }
     }
-    
+
     private void CheckForWall()
     {
         isWallRight = Physics.Raycast(orientation.position, orientation.right, 1f, whatIsWall);
@@ -115,7 +147,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (!isWallRight || !isWallLeft)
         {
-            
+
             TiltCameraToOriginalPos();
             // I don't want my x direction to go on for forever, so only run the StopWallRun() once each wall run exit
             if (isWallRunning == false)
@@ -152,7 +184,7 @@ public class PlayerMovement : MonoBehaviour
             // return the normal and point of the wall we hit with our ray
             orientationNormal = hit.normal.normalized;
             orientationPoint = hit.point;
-  
+
             // Get the direction the player should run in using the cross product
             Vector3 alongWall = Vector3.Cross(hit.normal, Vector3.up);
 
@@ -211,32 +243,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleWallJump()
     {
-        // check for jump is already checked for in the calling function "Jumping()"
-        RaycastHit hit = new RaycastHit();
-
-        if (isWallRight)
+        if (!isWallRight && !isWallLeft)
         {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && !isGrounded)
+        { 
+            // check for jump is already checked for in the calling function "Jumping()"
+            RaycastHit hit = new RaycastHit();
+
             isWallRunning = false;
-            Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
+
+            if (isWallRight)
+                Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
+            else if (isWallLeft)
+                Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
 
             // for jumping away from the wall
-            orientationNormal = hit.normal.normalized;
+            Vector3 wallNormal = hit.normal.normalized;
 
-            // horizontal jumping force
-            velocity = orientationNormal * wallJumpHorizontalForce;
+            // start from the vector (velocity) that we are currently at
+            Vector3 start = new Vector3(velocity.x, velocity.y, velocity.z);
+            // this is the vector we want to get to from the start
+            Vector3 destination = new Vector3(100f, 100f, 100f);
+            Vector3 result = Vector3.Lerp(velocity, destination, .5f);
 
-            // vertical jumping force
-            velocity.y = Mathf.Sqrt(wallJumpVerticalForce * -2f * gravity * Time.deltaTime);
-            controller.Move(velocity);
-            
+            controller.Move(result);
+
+            Debug.Log(result);
         }
-        if (isWallLeft && Input.GetKey(KeyCode.A))
-        {
-            Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
-            orientationNormal = hit.normal.normalized;
-
-            isWallRunning = false;
-        }
-        
     }
 }
