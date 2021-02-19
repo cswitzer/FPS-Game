@@ -264,14 +264,22 @@ public class PlayerMovement : MonoBehaviour
             Vector3 wallNormal = hit.normal.normalized;
 
             // start from the vector (velocity) that we are currently at
-            Vector3 start = new Vector3(velocity.x, velocity.y, velocity.z);
+            Vector3 startPosition = transform.localPosition;
             // this is the vector we want to get to from the start
             Vector3 destination = new Vector3(100f, 100f, 100f);
-            Vector3 result = Vector3.Lerp(velocity, destination, .5f);
+            Vector3 result;
 
-            controller.Move(result);
+            while (timeElapsed < 100f)
+            {
+                result = Vector3.Lerp(startPosition, destination, timeElapsed/4);
 
-            Debug.Log(result);
+                controller.Move(result);
+
+                Debug.Log(result);
+                timeElapsed += Time.deltaTime;
+            }
+
+            timeElapsed = 0;
         }
     }
 }
