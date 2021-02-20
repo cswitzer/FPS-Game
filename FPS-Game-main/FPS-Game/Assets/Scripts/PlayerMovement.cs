@@ -250,9 +250,6 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator HandleWallJump()
     {
-        Debug.Log("Coroutine was called");
-
-        // check for jump is already checked for in the calling function "Jumping()"
         RaycastHit hit = new RaycastHit();
 
         isWallRunning = false;
@@ -268,14 +265,22 @@ public class PlayerMovement : MonoBehaviour
         // start from the vector (velocity) that we are currently at
         Vector3 startPosition = transform.position;
         // this is the vector we want to get to from the start
-        Vector3 destination = new Vector3(wallNormal.x, transform.position.y + 5, transform.position.z);
+        Vector3 destination = new Vector3(0,0,0);
 
         while (timeElapsed < waitTime)
         {
+            if (isGrounded)
+            {
+                velocity.y = -1f;
+                yield break;
+            }
+
+            velocity.y += (gravity / 2) * Time.deltaTime;
+            // destination = new Vector3(transform.position.x, (transform.position.y + 50) + velocity.y, wallNormal.z * 2);
+            destination = new Vector3(transform.position.x, (transform.position.y + 19f) + velocity.y, wallNormal.z * 2f);
+
             this.transform.position = Vector3.Lerp(startPosition, destination, (timeElapsed / waitTime));
-            timeElapsed += Time.deltaTime;
-            controller.Move(this.transform.position);
-            // Debug.Log(this.transform.position);
+            timeElapsed += .00375f;
 
             yield return null;
         }
