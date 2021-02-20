@@ -34,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     public float wallRunCameraRotation;
     public float maxWallCameraRotation;
     public float timeElapsed = 0;
+    public float waitTime = 3f;
     Vector3 orientationNormal;
     Vector3 orientationPoint;
     bool isWallRunning = false;
@@ -45,6 +46,11 @@ public class PlayerMovement : MonoBehaviour
     bool isInAir = false;
     bool isGrounded;
 
+    void Start()
+    {
+
+    }
+
     void Update()
     {
         GroundCheck();
@@ -54,7 +60,8 @@ public class PlayerMovement : MonoBehaviour
             MovePlayerInAir();
         Jumping();
         CheckForWall();
-        HandleWallJump();
+        if (isWallRunning && Input.GetKeyDown(KeyCode.Space))
+            StartCoroutine(HandleWallJump());
     }
 
     private void MovePlayer()
@@ -241,45 +248,40 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void HandleWallJump()
+    private IEnumerator HandleWallJump()
     {
-        if (!isWallRight && !isWallLeft)
+        Debug.Log("Coroutine was called");
+
+        // check for jump is already checked for in the calling function "Jumping()"
+        RaycastHit hit = new RaycastHit();
+
+        isWallRunning = false;
+
+        if (isWallRight)
+            Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
+        else if (isWallLeft)
+            Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
+
+        // for jumping away from the wall
+        Vector3 wallNormal = hit.normal.normalized;
+
+        // start from the vector (velocity) that we are currently at
+        Vector3 startPosition = transform.position;
+        // this is the vector we want to get to from the start
+        Vector3 destination = new Vector3(wallNormal.x, transform.position.y + 5, transform.position.z);
+
+        while (timeElapsed < waitTime)
         {
-            return;
+            this.transform.position = Vector3.Lerp(startPosition, destination, (timeElapsed / waitTime));
+            timeElapsed += Time.deltaTime;
+            controller.Move(this.transform.position);
+            // Debug.Log(this.transform.position);
+
+            yield return null;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && !isGrounded)
-        { 
-            // check for jump is already checked for in the calling function "Jumping()"
-            RaycastHit hit = new RaycastHit();
-
-            isWallRunning = false;
-
-            if (isWallRight)
-                Physics.Raycast(transform.position, orientation.right, out hit, whatIsWall);
-            else if (isWallLeft)
-                Physics.Raycast(transform.position, -orientation.right, out hit, whatIsWall);
-
-            // for jumping away from the wall
-            Vector3 wallNormal = hit.normal.normalized;
-
-            // start from the vector (velocity) that we are currently at
-            Vector3 startPosition = transform.localPosition;
-            // this is the vector we want to get to from the start
-            Vector3 destination = new Vector3(100f, 100f, 100f);
-            Vector3 result;
-
-            while (timeElapsed < 100f)
-            {
-                result = Vector3.Lerp(startPosition, destination, timeElapsed/4);
-
-                controller.Move(result);
-
-                Debug.Log(result);
-                timeElapsed += Time.deltaTime;
-            }
-
-            timeElapsed = 0;
-        }
+        // make sure we get there
+        transform.position = destination;
+        timeElapsed = 0;
     }
 }
